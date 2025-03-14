@@ -1,26 +1,42 @@
 {
-  "name": "react_hardhat_template",
+  "name": "commissioner-nft",
   "version": "1.0.0",
-  "description": "",
+  "private": true,
+  "description": "An ERC-721 NFT that grants administrative control over custom sports leagues, enabling Commissioners to create and manage leagues, mint Season NFTs, and receive governance tokens (BGT).",
+  "keywords": [
+    "NFT",
+    "ERC-721",
+    "Commissioner",
+    "Baller Sportsbook",
+    "Web3",
+    "Crypto",
+    "Smart Contract",
+    "Ethereum"
+  ],
+  "author": "George Hoffmann <https://github.com/gahwings1/baller-sports-book>",
+
   "dependencies": {
-    "@testing-library/jest-dom": "^5.16.4",
+    "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
     "bootstrap": "^5.2.0",
     "react": "^18.2.0",
-    "react-bootstrap": "^2.4.0",
+    "react-bootstrap": "^2.5.0",
+    "react-countdown": "^2.3.2",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "@openzeppelin/contracts": "^5.0.0",
+    "dotenv": "^16.3.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.js --network sepolia"  
   },
-  "author": "gregory@dappuniversity.com",
-  "license": "ISC",
   "eslintConfig": {
     "extends": [
       "react-app",

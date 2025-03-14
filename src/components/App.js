@@ -13,14 +13,16 @@ import Loading from './Loading';
 // import config from '../config.json';
 
 function App() {
-  const [account, setAccount] = useState(null)
+  const [account, setAccount] = useState('')
   const [balance, setBalance] = useState(0)
+  const [provider, setProvider] = useState(null)
 
   const [isLoading, setIsLoading] = useState(true)
 
   const loadBlockchainData = async () => {
     // Initiate provider
     const provider = new ethers.providers.Web3Provider(window.ethereum)
+    setProvider(provider)
 
     // Fetch accounts
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
