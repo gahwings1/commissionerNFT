@@ -5,10 +5,15 @@ import "./ERC721Enumerable.sol";
 import "./Ownable.sol";
 
 contract NFT is ERC721Enumerable, Ownable {
+    using Strings for uint256;
+
     uint256 public cost;
     uint256 public maxSupply;
     uint256 public allowMintingOn;
     string public baseURI;
+    string public baseExtension = '.json';
+
+    event Mint(uint256 amount, address minter);
 
     constructor(
         string memory _name, 
@@ -35,5 +40,13 @@ contract NFT is ERC721Enumerable, Ownable {
         for(uint256 i = 1; i <= _mintAmount; i++) {
             _safeMint(msg.sender, supply + i);            
         }
+
+        emit Mint(_mintAmount, msg.sender);
+    }
+
+    function tokenURI(uint256 _tokenId) public view virtual override returns(string memory)
+    {
+        require(_exists(_tokenId), 'token does not exist');
+        return(string(abi.encodePacked(baseURI, _tokenId.toString(), baseExtension)));
     }
 }
