@@ -14,6 +14,8 @@ contract NFT is ERC721Enumerable, Ownable {
     string public baseExtension = '.json';
 
     event Mint(uint256 amount, address minter);
+    event Withdraw(uint256 amount, address owner);
+    event CostUpdated(uint256 newCost, address updatedBy);
 
     constructor(
         string memory _name, 
@@ -30,12 +32,12 @@ contract NFT is ERC721Enumerable, Ownable {
     }
 
     function mint(uint256 _mintAmount) public payable {
-        require(block.timestamp >= allowMintingOn);
-        require(_mintAmount > 0);
-        require(msg.value >= cost * _mintAmount);
+        require(block.timestamp >= allowMintingOn, "Minting is not allowed yet");
+        require(_mintAmount > 0, "Must mint at least 1 NFT");
+        require(msg.value >= cost * _mintAmount, "Insufficient funds");
 
         uint256 supply = totalSupply();
-        require(supply + _mintAmount <= maxSupply);
+        require(supply + _mintAmount <= maxSupply, "Max supply exceeded");
 
         for(uint256 i = 1; i <= _mintAmount; i++) {
             _safeMint(msg.sender, supply + i);            
@@ -53,9 +55,31 @@ contract NFT is ERC721Enumerable, Ownable {
     function walletOfOwner(address _owner) public view returns(uint256[] memory) {
         uint256 ownerTokenCount = balanceOf(_owner);
         uint256[] memory tokenIds = new uint256[](ownerTokenCount);
-        for(uint256 i; i < ownerTokenCount; i++) {
+        for (uint256 i = 0; i < ownerTokenCount; i++) {
             tokenIds[i] = tokenOfOwnerByIndex(_owner, i);
         }
         return tokenIds;
     }
+
+    function withdraw() public onlyOwner returns (bool) {
+        uint256 balance = address(this).balance;
+        (bool success, ) = payable(msg.sender).call{value: balance}("");
+        require(success, "Withdraw failed");
+        emit Withdraw(balance, msg.sender);
+        return success;
+    }
+
+//    function withdraw() public onlyOwner {
+//        uint256 balance = address(this).balance;
+//        (bool success, ) = payable(msg.sender).call{value: balance}("");
+//        require(success);
+
+//        emit Withdraw(balance, msg.sender);
+//    }
+
+    function setCost(uint256 _newCost) public onlyOwner {
+        cost = _newCost;
+        emit CostUpdated(_newCost, msg.sender);
+    }
+
 }

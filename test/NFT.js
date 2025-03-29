@@ -171,4 +171,75 @@ describe('NFT', () => {
       })
     })
   })
+
+  describe('Withdrawal of funds', async () => {
+
+    describe('Success', async () => {
+      let transaction, result, balanceBefore
+      const ALLOW_MINTING_ON = Date.now().toString().slice(0, 10)
+
+      beforeEach(async () => {
+        const NFT = await ethers.getContractFactory('NFT')
+        nft = await NFT.deploy(NAME, SYMBOL, COST, MAX_SUPPLY, ALLOW_MINTING_ON, BASE_URI)
+
+        transaction = await nft.connect(minter).mint(1, {value: COST})
+        result = await transaction.wait()
+
+        balanceBefore =  await ethers.provider.getBalance(deployer.address)
+
+        transaction = await nft.connect(deployer).withdraw()
+        result = await transaction.wait()
+      })
+
+      it('deducts contract balance', async () => {
+        expect(await ethers.provider.getBalance(nft.address)).to.equal(0)
+      })
+
+      it('sends funds to the owner', async () => {
+        expect(await ethers.provider.getBalance(deployer.address)).to.be.greaterThan(balanceBefore)
+      })
+
+      it('Emits a withdraw event', async () => {
+        expect(transaction).to.emit(nft, 'Withdraw').withArgs(COST, deployer.address)
+      })
+    })
+
+    describe('Failure', async () => {
+
+      it('Prevents non-ownder from withdrawing', async () => {
+        const ALLOW_MINTING_ON = Date.now().toString().slice(0, 10)
+        const NFT = await ethers.getContractFactory('NFT')
+        nft = await NFT.deploy(NAME, SYMBOL, COST, MAX_SUPPLY, ALLOW_MINTING_ON, BASE_URI)
+        nft.connect(minter).mint(1, {value: COST})
+
+        await expect(nft.connect(minter).withdraw()).to.be.reverted
+      })
+    })
+  })
+
+  describe('setCost', () => {
+    beforeEach(async () => {
+      const NFT = await ethers.getContractFactory('NFT')
+      nft = await NFT.deploy(NAME, SYMBOL, COST, MAX_SUPPLY, ALLOW_MINTING_ON, BASE_URI)
+    })
+
+    it('allows only the owner to update the cost', async () => {
+      const newCost = ether(5)
+
+      await expect(nft.connect(deployer).setCost(newCost))
+        .to.emit(nft, 'CostUpdated')
+        .withArgs(newCost, deployer.address)
+
+      expect(await nft.cost()).to.equal(newCost)
+    })
+
+    it('prevents non-owner from updating the cost', async () => {
+      const newCost = ether(7)
+
+      await expect(nft.connect(minter).setCost(newCost)).to.be.revertedWith(
+        'Ownable: caller is not the owner'
+      )
+    })
+  })
+
 })
